@@ -5,6 +5,10 @@ from functions_pygame import load_image
 
 tiles_group = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
+# print(pygame.font.get_fonts())
+
+pygame.font.init()
+font = pygame.font.SysFont('arial', 40)
 
 blacks = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
 
@@ -21,12 +25,10 @@ class Dot(pygame.sprite.Sprite):
     def move(self, pos):
         self.rect = self.rect.move(pos[0], pos[1])
 
-    def can_be_placed(self, *group_dots):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
-            for tile in group_dots:
-                if type(tile) is TileRect:
-                    return False
-            return True
+    def can_be_placed(self, group_dots):
+        for sprite in group_dots:
+            if self.rect.collidepoint(pygame.mouse.get_pos()) and not self.rect.colliderect(sprite.rect):
+                return True
         return False
 
 
@@ -35,6 +37,9 @@ class Chip(pygame.sprite.Sprite):
         super().__init__(sprites)
         self.image = pygame.transform.scale(load_image('chip.png', -1), (50, 50))
         self.rect = self.image.get_rect().move(x - 25, y - 25)
+
+    def make_kill(self):
+        self.kill()
 
 
 class GridOfDots(pygame.surface.Surface):
@@ -58,10 +63,11 @@ class TileRect(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(load_image('brick.png', -1), (53, 85))
         self.rect = self.image.get_rect().move(x, y)
 
-    def check_collide(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+    def can_be_placed(self, group):
+        for sprite in group:
+            if self.rect.collidepoint(pygame.mouse.get_pos()) and self.rect.colliderect(sprite.rect):
+                return True
 
-            return True
         return False
 
 
@@ -78,4 +84,37 @@ class GridOfTiles(pygame.surface.Surface):
                          sprites)
 
 
+class Button:
+    def __init__(self, color, x, y, width, height, text='', on_click=object):
+        self.func = on_click
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
 
+    def draw(self, win, outline=None):
+        # Call this method to draw the button on the screen
+        if outline:
+            pygame.draw.rect(win, outline, (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
+
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height), 0)
+
+        if self.text != '':
+            font = pygame.font.SysFont('comicsans', 60)
+            text = font.render(self.text, 1, (0, 0, 0))
+            win.blit(text,
+                 (self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
+
+    def on_click(self, pos, *args):
+        if pygame.rect.Rect(self.x, self.y, self.width, self.height).collidepoint(pos):
+            self.func(*args)
+
+    def isOver(self, pos):
+        # Pos is the mouse position or a tuple of (x, y) coordinates
+        if pos[0] > self.x and pos[0] < self.x + self.width:
+            if pos[1] > self.y and pos[1] < self.y + self.height:
+                return True
+
+        return False
