@@ -119,4 +119,4 @@ class Button:
 
     def on_click(self, pos, *args):
         if pygame.rect.Rect(self.x, self.y, self.width, self.height).collidepoint(pos):
-            self.func(*args)
+            return self.func(*args)

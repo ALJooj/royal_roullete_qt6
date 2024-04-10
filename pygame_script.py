@@ -30,7 +30,7 @@ chips_group = pygame.sprite.Group()
 buttons_group = pygame.sprite.Group()
 
 running = True
-screen.fill((255,255,255))
+
 # до запуска
 fon = pygame.transform.scale(load_image('start_fon.png'), (790, 450))
 grid_of_tiles = GridOfTiles((75, 26), brick_group, all_sprites)
@@ -43,15 +43,21 @@ screen.blit(fon, (0, 0))
 cont = False
 
 my_wallet = 350
+last_win_pos = 0
+last_win_bet = 0
+history_tiles = []
+history_bets = []
 
 
 def randomize_roll(tiles, chips, wallet):
-    a = random.randint(0, 36)
+    position = random.randint(0, 36)
+    # position = 13
     for tile in tiles:
-        if tile.number == a:
+        if tile.number == position:
             wallet += tile.value * 36
-            print("Победное число", a, "ваш выигрыш", tile.value * 36)
+            print("Победное число", position, "ваш выигрыш", tile.value * 36)
             print("Ваш банк", wallet)
+            win_val = tile.value
         tile.value = 0
 
     for c in chips:
@@ -64,11 +70,13 @@ def randomize_roll(tiles, chips, wallet):
             c.rect = c.rect.move(1000, 1000)
             c.update(True)
             c.kill()
-    return a
+    return position, win_val
 
 
 # color, x, y, width, height, text=''
 start_btn = Button((255, 255, 255), 800, 80, 140, 140, 'start', randomize_roll)
+
+
 
 
 while running:
@@ -82,18 +90,26 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             last_pos = event.pos
 
-            # TileRect(event.pos[0], event.pos[1], brick_group)
-            start_btn.on_click(event.pos, brick_group, chips_group, my_wallet)
+            a = start_btn.on_click(event.pos, brick_group, chips_group, my_wallet)
+            if a is None:
+                pass
+            else:
+                print(a)
+                last_win_pos, last_win_bet = a
+                my_wallet += last_win_bet * 36
+                history_bets.append(last_win_bet)
+                history_tiles.append(last_win_pos)
 
             for chip in chips_group:
                 chip.update()
 
             for tile in tiles_group:
                 if tile.can_be_placed(brick_group):
-                    a = Chip(tile.rect.x + 7, tile.rect.y + 7, chips_group, all_sprites)
-                    tile.bet(a.cost)
-                    my_wallet -= a.cost
-                    cont = True     # 1 клик 1 ставка
+                    if my_wallet > 0:
+                        a = Chip(tile.rect.x + 7, tile.rect.y + 7, chips_group, all_sprites)
+                        tile.bet(a.cost)
+                        my_wallet -= a.cost
+                        cont = True     # 1 клик 1 ставка
 
             if cont:
                 cont = False
@@ -101,14 +117,22 @@ while running:
 
             for tile in brick_group:
                 if tile.can_be_placed(tiles_group):
-                    a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
-                    tile.bet(a.cost)
-                    my_wallet -= a.cost
+                    if my_wallet > 0:
+                        a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
+                        tile.bet(a.cost)
+                        my_wallet -= a.cost
             clicked = True
 
-    # после отрисовки всего, переворачиваем экран
-    screen.blit(fon, (0, 0))
+    font_1 = pygame.font.SysFont('castellar', 44)
+    string_rendered = font_1.render('Bank: ' + str(my_wallet),
+                                    1, pygame.Color('red'))
+    string_rendered_2 = font_1.render("Победное число " + str(last_win_pos) + " ваш выигрыш " + str(last_win_bet * 36),
+                                    1, pygame.Color('red'))
 
+
+    # после отрисовки всего, переворачиваем экран
+    screen.fill((255, 255, 255))
+    screen.blit(fon, (0, 0))
     start_btn.draw(screen)
     # all_sprites.draw(screen)
     buttons_group.draw(screen)
@@ -116,8 +140,9 @@ while running:
     tiles_group.draw(screen)
     chips_group.draw(screen)
 
-    # all_sprites.update()
-
+    # texts
+    screen.blit(string_rendered_2, (50, 600))
+    screen.blit(string_rendered, (800, 500))
     clock.tick(FPS)
     pygame.display.flip()
 
