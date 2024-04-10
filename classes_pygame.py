@@ -35,11 +35,17 @@ class Dot(pygame.sprite.Sprite):
 class Chip(pygame.sprite.Sprite):
     def __init__(self, x, y, *sprites):
         super().__init__(sprites)
+        self.cost = 10
         self.image = pygame.transform.scale(load_image('chip.png', -1), (50, 50))
         self.rect = self.image.get_rect().move(x - 25, y - 25)
 
-    def make_kill(self):
-        self.kill()
+    def check_state(self, kill=False):
+        if kill:
+            self.kill()
+
+    def update(self, btn_start_pressed=False):
+        if btn_start_pressed:
+            self.kill()
 
 
 class GridOfDots(pygame.surface.Surface):
@@ -59,6 +65,7 @@ class TileRect(pygame.sprite.Sprite):
     def __init__(self, x, y, number, color, *sprites):
         super().__init__(sprites)
         self.number = number
+        self.value = 0
         self.color = color
         self.image = pygame.transform.scale(load_image('brick.png', -1), (53, 85))
         self.rect = self.image.get_rect().move(x, y)
@@ -69,6 +76,9 @@ class TileRect(pygame.sprite.Sprite):
                 return True
 
         return False
+
+    def bet(self, value):
+        self.value += value
 
 
 class GridOfTiles(pygame.surface.Surface):
@@ -110,11 +120,3 @@ class Button:
     def on_click(self, pos, *args):
         if pygame.rect.Rect(self.x, self.y, self.width, self.height).collidepoint(pos):
             self.func(*args)
-
-    def isOver(self, pos):
-        # Pos is the mouse position or a tuple of (x, y) coordinates
-        if pos[0] > self.x and pos[0] < self.x + self.width:
-            if pos[1] > self.y and pos[1] < self.y + self.height:
-                return True
-
-        return False

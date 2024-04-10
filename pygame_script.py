@@ -42,20 +42,28 @@ screen.blit(fon, (0, 0))
 
 cont = False
 
+my_wallet = 350
 
-def randomize_roll(tiles, chips):
+
+def randomize_roll(tiles, chips, wallet):
     a = random.randint(0, 36)
     for tile in tiles:
         if tile.number == a:
-            print(123)
+            wallet += tile.value * 36
+            print("Победное число", a, "ваш выигрыш", tile.value * 36)
+            print("Ваш банк", wallet)
+        tile.value = 0
 
-    for chip in chips:
-        chip.make_kill()
-        # chip.kill()
-        # all_sprites.remove(chip)
-        # chips_group.remove(chip)
-    # chips.remove(chips)
-    print(chips)
+    for c in chips:
+        c.rect = c.rect.move(1000, 1000)
+        c.update(True)
+        c.kill()
+
+    for c in all_sprites:
+        if type(c) is Chip:
+            c.rect = c.rect.move(1000, 1000)
+            c.update(True)
+            c.kill()
     return a
 
 
@@ -75,12 +83,16 @@ while running:
             last_pos = event.pos
 
             # TileRect(event.pos[0], event.pos[1], brick_group)
-            start_btn.on_click(event.pos, brick_group, chips_group)
+            start_btn.on_click(event.pos, brick_group, chips_group, my_wallet)
+
+            for chip in chips_group:
+                chip.update()
 
             for tile in tiles_group:
                 if tile.can_be_placed(brick_group):
-                    print(tile.rect.x - 7)
-                    Chip(tile.rect.x + 7, tile.rect.y + 7, chips_group, all_sprites)
+                    a = Chip(tile.rect.x + 7, tile.rect.y + 7, chips_group, all_sprites)
+                    tile.bet(a.cost)
+                    my_wallet -= a.cost
                     cont = True     # 1 клик 1 ставка
 
             if cont:
@@ -89,17 +101,22 @@ while running:
 
             for tile in brick_group:
                 if tile.can_be_placed(tiles_group):
-                    Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
-                    print(tile.color, tile. number, type(tile))
+                    a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
+                    tile.bet(a.cost)
+                    my_wallet -= a.cost
             clicked = True
 
     # после отрисовки всего, переворачиваем экран
+    screen.blit(fon, (0, 0))
+
     start_btn.draw(screen)
     # all_sprites.draw(screen)
     buttons_group.draw(screen)
     brick_group.draw(screen)
     tiles_group.draw(screen)
     chips_group.draw(screen)
+
+    # all_sprites.update()
 
     clock.tick(FPS)
     pygame.display.flip()
