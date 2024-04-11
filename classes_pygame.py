@@ -27,9 +27,12 @@ class Dot(pygame.sprite.Sprite):
 
     def can_be_placed(self, group_dots):
         for sprite in group_dots:
-            if self.rect.collidepoint(pygame.mouse.get_pos()) and not self.rect.colliderect(sprite.rect):
+            if self.rect.collidepoint(pygame.mouse.get_pos()) : # and not self.rect.colliderect(sprite.rect)
                 return True
         return False
+
+    def bet(self, value):
+        pass
 
 
 class Chip(pygame.sprite.Sprite):
@@ -62,19 +65,19 @@ class GridOfDots(pygame.surface.Surface):
 
 
 class TileRect(pygame.sprite.Sprite):
-    def __init__(self, x, y, number, color, *sprites):
+    def __init__(self, x, y, number, color, size_tile=(53, 85), *sprites, condition=None):
         super().__init__(sprites)
         self.number = number
+        self.condition = condition
         self.value = 0
         self.color = color
-        self.image = pygame.transform.scale(load_image('brick.png', -1), (53, 85))
+        self.image = pygame.transform.scale(load_image('brick.png', -1), size_tile)
         self.rect = self.image.get_rect().move(x, y)
 
     def can_be_placed(self, group):
         for sprite in group:
-            if self.rect.collidepoint(pygame.mouse.get_pos()) and self.rect.colliderect(sprite.rect):
+            if self.rect.collidepoint(pygame.mouse.get_pos()) : # and self.rect.colliderect(sprite.rect)
                 return True
-
         return False
 
     def bet(self, value):
@@ -90,8 +93,31 @@ class GridOfTiles(pygame.surface.Surface):
             for j in range(12):
                 TileRect(offset[0] + (self.tile_height * j), offset[1] + (self.tile_width * i),
                          abs(i - 3) + (3 * j),
-                         'b' if abs(i - 3) + (3 * j) in blacks else 'r',
+                         'b' if abs(i - 3) + (3 * j) in blacks else 'r', (53, 85),
                          sprites)
+
+
+class GridOfBets(pygame.surface.Surface):
+    def __init__(self, offset, *sprites):
+        super().__init__((795, 180))
+        self.tile_height = 53
+        self.tile_width = 85
+        for i in range(2):
+            for j in range(12):
+                if i == 0 and j % 4 == 0:
+                    print('i j', i, j // 4 + 100)
+                    TileRect(offset[0] + (self.tile_height * j), offset[1] + (self.tile_width * i),
+                             j // 4 + 100,
+                             'b' if abs(i - 3) + (3 * j) in blacks else 'r',
+                             (53 * 4, 85),
+                             sprites)
+                if i == 1 and j % 2 == 0:
+                    # print('i j', i, j // 2 + 103)
+                    TileRect(offset[0] + (self.tile_height * j), offset[1] + (self.tile_width * i),
+                             j // 2 + 100 + 3,
+                             'b' if abs(i - 3) + (3 * j) in blacks else 'r',
+                             (53 * 2, 85),
+                             sprites)
 
 
 class Button:
