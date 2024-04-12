@@ -35,7 +35,7 @@ running = True
 fon = pygame.transform.scale(load_image('start_fon.png'), (790, 450))
 grid_of_tiles = GridOfTiles((75, 26), brick_group, all_sprites)
 grid_of_dots = GridOfDots((71, 15), tiles_group, all_sprites)
-grid_of_bets = GridOfBets((75, 270), tiles_group, all_sprites)
+grid_of_bets = GridOfBets((75, 270), brick_group, all_sprites)
 
 screen.blit(grid_of_dots, (0, 0))
 screen.blit(grid_of_tiles, (0, 0))
@@ -50,6 +50,8 @@ history_tiles = []
 history_bets = []
 history_win_tiles = []
 history_win_bets = []
+
+blacks = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
 
 
 def repeat_last_roll(bets, poses, screen, tiles, chips, wallet, bet_grid):
@@ -77,15 +79,54 @@ def randomize_roll(tiles, chips, wallet, bet_grid):
             last_bets.append(tile.value)
 
         # if tile.number in range(100, 109):
+        if tile.value > 0:
+            print('ti', tile.number)
+            # если совпал номер
+            if tile.number in range(0, 37) and position == tile.number:
+                win_val += tile.value * 36
 
-        if tile.number == position:
-            # wallet += tile.value * 36
-            print("Победное число", position, "ваш выигрыш", tile.value * 36)
-            if tile.value > 0:
-                # for bets in bet_grid:
-                pass
-            print("Ваш банк", wallet)
-            win_val = tile.value
+            # в первых 12 (1:3)
+            if tile.number in range(100, 103):
+                if position in range(1, 13) and tile.number == 100:
+                    win_val += tile.value * 3
+                if position in range(13, 25) and tile.number == 101:
+                    win_val += tile.value * 3
+                if position in range(25, 37) and tile.number == 102:
+                    win_val += tile.value * 3
+                # win_val += tile.value * 3
+
+            if tile.number in range(103, 109):
+                # 1-19
+                if tile.number == 103 and position in range(1, 19):
+                    win_val += tile.value * 2
+
+                if tile.number == 108 and position in range(19, 37):
+                    win_val += tile.value * 2
+
+                # odd or even
+                if tile.number == 104 and position % 2 == 0:
+                    win_val += tile.value * 2
+
+                if tile.number == 107 and position % 2 == 1:
+                    print(position, blacks)
+                    win_val += tile.value * 2
+
+                # red or black
+                if tile.number == 105 and position not in blacks:
+                    win_val += tile.value * 2
+
+                if tile.number == 106 and position in blacks:
+                    win_val += tile.value * 2
+
+            tile.value = 0
+            print('win val', win_val)
+
+        # if tile.number == position:
+        #     # wallet += tile.value * 36
+        #     print("Победное число", position, "ваш выигрыш", tile.value * 36)
+        #
+        #     print("Ваш банк", wallet)
+        #     win_val = tile.value
         tile.value = 0
 
     for c in chips:
@@ -125,7 +166,7 @@ while running:
             else:
                 print(a)
                 last_win_pos, last_win_bet, last_bet_poses, last_bets_of_poses = a
-                my_wallet += last_win_bet * 36
+                my_wallet += last_win_bet
                 history_bets.append(last_bets_of_poses)
                 history_tiles.append(last_bet_poses)
                 history_win_tiles.append(last_win_pos)
@@ -157,7 +198,8 @@ while running:
     font_1 = pygame.font.SysFont('castellar', 44)
     string_rendered = font_1.render('Bank: ' + str(my_wallet),
                                     1, pygame.Color('red'))
-    string_rendered_2 = font_1.render("Победное число " + str(last_win_pos) + " ваш выигрыш " + str(last_win_bet * 36),
+    string_rendered_2 = font_1.render("Победное число " + str(last_win_pos) + (' черное ' if last_win_pos in blacks else
+                                      ' красное ') + " ваш выигрыш " + str(last_win_bet),
                                     1, pygame.Color('red'))
 
 

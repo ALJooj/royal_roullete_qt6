@@ -67,6 +67,7 @@ class GridOfDots(pygame.surface.Surface):
 class TileRect(pygame.sprite.Sprite):
     def __init__(self, x, y, number, color, size_tile=(53, 85), *sprites, condition=None):
         super().__init__(sprites)
+        self.is_even = number % 2 == 0
         self.number = number
         self.condition = condition
         self.value = 0
