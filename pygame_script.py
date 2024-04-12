@@ -57,14 +57,29 @@ blacks = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]
 def repeat_last_roll(bets, poses, screen, tiles, chips, wallet, bet_grid):
     # for tile in tiles:
     #     if tile
-    print(poses, bets)
+    # print(poses, bets)
+    delta = wallet
     for tile in tiles:
         if wallet > 0:
-            if tile.number in poses[-1]:
-                a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
-                # for i in range()
-                tile.bet(a.cost)
-                wallet -= a.cost
+            for i in range(len(poses[-1])):
+                if i == tile.number:
+                    for j in range(len(bets[-1])):
+                        for k in range(bets[-1][j] // 10):
+                            a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
+                            # for i in range()
+                            print('bets', bets)
+                            tile.bet(a.cost)
+                            delta -= a.cost
+
+            # if tile.number in poses[-1]:
+            #     a = Chip(tile.rect.x + 28, tile.rect.y + 42, chips_group, all_sprites)
+            #     # for i in range()
+            #     print('bets', bets)
+            #     tile.bet(a.cost)
+            #     delta -= a.cost
+    delta -= wallet
+    print('wallet', delta)
+    return delta
 
 
 def randomize_roll(tiles, chips, wallet, bet_grid):
@@ -80,7 +95,6 @@ def randomize_roll(tiles, chips, wallet, bet_grid):
 
         # if tile.number in range(100, 109):
         if tile.value > 0:
-            print('ti', tile.number)
             # если совпал номер
             if tile.number in range(0, 37) and position == tile.number:
                 win_val += tile.value * 36
@@ -108,7 +122,6 @@ def randomize_roll(tiles, chips, wallet, bet_grid):
                     win_val += tile.value * 2
 
                 if tile.number == 107 and position % 2 == 1:
-                    print(position, blacks)
                     win_val += tile.value * 2
 
                 # red or black
@@ -119,14 +132,6 @@ def randomize_roll(tiles, chips, wallet, bet_grid):
                     win_val += tile.value * 2
 
             tile.value = 0
-            print('win val', win_val)
-
-        # if tile.number == position:
-        #     # wallet += tile.value * 36
-        #     print("Победное число", position, "ваш выигрыш", tile.value * 36)
-        #
-        #     print("Ваш банк", wallet)
-        #     win_val = tile.value
         tile.value = 0
 
     for c in chips:
@@ -159,7 +164,8 @@ while running:
             clicked = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             last_pos = event.pos
-            repeat_btn.on_click(event.pos, history_bets, history_tiles, screen, brick_group, chips_group, my_wallet, grid_of_bets)
+            b = repeat_btn.on_click(event.pos, history_bets, history_tiles, screen, brick_group, chips_group, my_wallet, grid_of_bets)
+            my_wallet += b if b is not None else 0
             a = start_btn.on_click(event.pos, brick_group, chips_group, my_wallet, grid_of_bets)
             if a is None:
                 pass
